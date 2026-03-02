@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -12,23 +12,23 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Use the Netlify variable, or fallback to localhost for development
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        // Use withCredentials to ensure the session cookie is sent to the backend
-        const res = await axios.get("http://localhost:5000/auth/me", { 
+        // Pointing to the dynamic API_BASE_URL instead of hardcoded localhost
+        const res = await axios.get(`${API_BASE_URL}/auth/me`, { 
           withCredentials: true 
         });
 
-        // FIX: Check if data exists. If backend sends { success: true, user: {...} }
         if (res.data && res.data.user) {
           setUser(res.data.user);
         } else {
-          // If backend sends the user object directly: res.data
           setUser(res.data);
         }
       } catch (error) {
-        // This catch handles the 401 Unauthorized quietly
         console.log("Status: Visitor mode (Not logged in)");
         setUser(null);
       } finally {
@@ -37,13 +37,12 @@ function App() {
     };
 
     fetchUser();
-  }, []);
+  }, [API_BASE_URL]); // Added dependency for safety
 
   if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <>
-      {/* Navbar stays outside Routes to persist on all pages */}
       <Navbar user={user} setUser={setUser} />
 
       <Routes>

@@ -1,7 +1,10 @@
 export default function Login() {
+  // Use the Netlify variable, or fallback to localhost for development
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
   const handleLogin = () => {
-    // Redirects the user to the backend OAuth route
-    window.location.href = "http://localhost:5000/auth/google";
+    // Redirects the user to the DYNAMIC backend OAuth route
+    window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
   return (
@@ -30,6 +33,7 @@ export default function Login() {
     </div>
   );
 }
+
 
 const styles = {
   container: {
