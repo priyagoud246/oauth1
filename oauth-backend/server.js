@@ -13,7 +13,6 @@ import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
-
 const allowedOrigins = [
   "http://localhost:5173", 
   "http://localhost:5174", 
@@ -41,15 +40,15 @@ app.use(session({
   secret: process.env.SESSION_SECRET || "secret_key",
   resave: false,
   saveUninitialized: false, 
+  proxy: true,
   store: MongoStore.create({ 
     mongoUrl: process.env.MONGO_URI,
     collectionName: 'sessions' 
   }),
   cookie: {
-    
-    secure: process.env.NODE_ENV === "production", 
+    secure: true, 
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", 
+    sameSite: "none", 
     maxAge: 24 * 60 * 60 * 1000 
   }
 }));
@@ -68,4 +67,4 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error(" DB Error:", err));
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(` Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
