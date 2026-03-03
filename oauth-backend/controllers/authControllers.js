@@ -30,11 +30,11 @@ export const logout = (req, res) => {
 
       
       res.clearCookie("connect.sid", {
-        path: "/",
-        httpOnly: true,
-        secure: false, 
-        sameSite: "lax"
-      });
+  path: "/",
+  httpOnly: true,
+  secure: true,   
+  sameSite: "none" 
+   });
 
       
       return res.status(200).json({ 
