@@ -5,21 +5,25 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(false);
 
+  // 1. Define the dynamic API URL
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
   useEffect(() => {
-    
-    axios.get("http://localhost:5000/auth/me", { withCredentials: true })
+    // 2. Updated to use API_BASE_URL
+    axios.get(`${API_BASE_URL}/auth/me`, { withCredentials: true })
       .then(res => {
-        if (res.data.success) {
+        // Updated to match your authControllers.js format
+        if (res.data && res.data.user) {
           setUser(res.data.user);
         }
       })
       .catch(err => {
         console.error("Not authenticated", err);
         setError(true);
-        // If the backend says no, go back to login
+        // Fallback redirect to home page
         window.location.href = "/";
       });
-  }, []);
+  }, [API_BASE_URL]);
 
   if (error) return <div style={styles.container}><h1>Redirecting to Login...</h1></div>;
   if (!user) return <div style={styles.container}><h1>Loading Priyanka's Dashboard...</h1></div>;
@@ -30,7 +34,6 @@ export default function Dashboard() {
       <p style={styles.subText}>You have successfully logged in with Google</p>
 
       <div style={styles.card}>
-        {/* Profile Image if you want to show it */}
         {user.image && <img src={user.image} alt="profile" style={styles.avatar} />}
         
         <div style={styles.infoRow}><strong>Name:</strong> {user.displayName}</div>
@@ -38,7 +41,8 @@ export default function Dashboard() {
         <div style={styles.infoRow}><strong>Google ID:</strong> {user.googleId}</div>
         
         <button 
-          onClick={() => window.location.href = "http://localhost:5000/auth/logout"}
+          // 3. Updated Logout Link
+          onClick={() => window.location.href = `${API_BASE_URL}/auth/logout`}
           style={styles.logoutBtn}
         >
           Logout
@@ -47,6 +51,7 @@ export default function Dashboard() {
     </div>
   );
 }
+
 
 const styles = {
   container: {
