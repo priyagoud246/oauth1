@@ -1,16 +1,15 @@
 import { Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-axios.defaults.withCredentials = true;
 
+// 1. GLOBAL AXIOS CONFIG: Essential for sending cookies to Render
+axios.defaults.withCredentials = true;
 
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-
-
 
 function App() {
   const [user, setUser] = useState(null);
@@ -22,10 +21,8 @@ function App() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        // Pointing to the dynamic API_BASE_URL instead of hardcoded localhost
-        const res = await axios.get(`${API_BASE_URL}/auth/me`, { 
-          withCredentials: true 
-        });
+        // GET request to backend to check if session exists
+        const res = await axios.get(`${API_BASE_URL}/auth/me`);
 
         if (res.data && res.data.user) {
           setUser(res.data.user);
@@ -41,8 +38,9 @@ function App() {
     };
 
     fetchUser();
-  }, [API_BASE_URL]); // Added dependency for safety
+  }, [API_BASE_URL]);
 
+  // Global loading screen while fetching auth status
   if (loading) return <div className="loading">Loading...</div>;
 
   return (
@@ -56,7 +54,8 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute user={user}>
+          
+            <ProtectedRoute user={user} loading={loading}>
               <Dashboard user={user} />
             </ProtectedRoute>
           }
