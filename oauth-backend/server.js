@@ -13,9 +13,9 @@ import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
+// Ensure there are NO trailing slashes in these URLs
 const allowedOrigins = [
   "http://localhost:5173", 
-  "http://localhost:5174", 
   "https://oauth-fullstack.netlify.app" 
 ];
 
@@ -33,17 +33,18 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
 app.set("trust proxy", 1); 
 
 app.use(session({
-  secret: process.env.SESSION_SECRET || "secret_key",
+  // Ensure SESSION_SECRET is set in Render Environment
+  secret: process.env.SESSION_SECRET || "priyanka_secure_67",
   resave: false,
   saveUninitialized: false, 
   proxy: true,
   store: MongoStore.create({ 
     mongoUrl: process.env.MONGO_URI,
-    collectionName: 'sessions' 
+    collectionName: 'sessions',
+    ttl: 14 * 24 * 60 * 60 
   }),
   cookie: {
     secure: true, 
@@ -57,13 +58,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get("/", (req, res) => {
-  res.send("🚀 Priyanka's OAuth Server is live and running!");
+  res.send("🚀 Priyanka's OAuth Server is live!");
 });
 
 app.use("/auth", authRoutes);
 
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log(" Connected to Priyanka's MongoDB (oauth_db)"))
+  .then(() => console.log("Connected to MongoDB Atlas (oauth_db)"))
   .catch(err => console.error(" DB Error:", err));
 
 const PORT = process.env.PORT || 5000;
