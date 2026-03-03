@@ -5,28 +5,29 @@ import { isAuthenticated } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-// 1. Initial Google Authentication
+const CLIENT_URL = process.env.NODE_ENV === "production" 
+    ? "https://oauth-fullstack.netlify.app" 
+    : "http://localhost:5173";
+
 router.get("/google", (req, res, next) => {
-    // This will show in your terminal when you click the button
-    console.log("🚀 Incoming request to /auth/google...");
+    console.log(" Incoming request to /auth/google...");
     next();
 }, passport.authenticate("google", { 
     scope: ["profile", "email"],
-    prompt: "select_account" // Forces the account selector to appear
+    prompt: "select_account"
 }));
 
-// 2. Google Callback
 router.get("/google/callback", (req, res, next) => {
-    console.log("🔄 Google redirected back to callback...");
+    console.log("Google redirected back to callback...");
     next();
 },
   passport.authenticate("google", { 
-    failureRedirect: `${process.env.CLIENT_URL || 'http://localhost:5173'}/login`, 
+    failureRedirect: `${CLIENT_URL}/login`, 
     session: true 
   }),
   (req, res) => {
-    console.log("✅ Auth Successful! Sending user to Dashboard.");
-    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard`);
+    console.log(" Auth Successful! Sending user to Dashboard.");
+    res.redirect(`${CLIENT_URL}/dashboard`);
   }
 );
 
