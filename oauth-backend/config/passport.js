@@ -3,7 +3,6 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "../models/User.js";
 import dotenv from "dotenv";
 
-
 dotenv.config(); 
 
 passport.use(
@@ -12,12 +11,11 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
-      
       proxy: true 
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        
+       
         let user = await User.findOne({ 
           $or: [{ googleId: profile.id }, { email: profile.emails?.[0]?.value }] 
         });
@@ -31,12 +29,11 @@ passport.use(
           return done(null, user);
         }
 
-        
         user = await User.create({
           googleId: profile.id,
-          displayName: profile.displayName,
-          email: profile.emails?.[0]?.value,
-          image: profile.photos?.[0]?.value,
+          name: profile.displayName, 
+          email: profile.emails?.[0]?.value
+          
         });
         
         return done(null, user);
