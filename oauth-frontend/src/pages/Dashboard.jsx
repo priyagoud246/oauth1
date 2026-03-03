@@ -5,14 +5,12 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(false);
 
-  // 1. Define the dynamic API URL
+  // Use the dynamic API URL from environment variables
   const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
-    // 2. Updated to use API_BASE_URL
     axios.get(`${API_BASE_URL}/auth/me`, { withCredentials: true })
       .then(res => {
-        // Updated to match your authControllers.js format
         if (res.data && res.data.user) {
           setUser(res.data.user);
         }
@@ -20,10 +18,24 @@ export default function Dashboard() {
       .catch(err => {
         console.error("Not authenticated", err);
         setError(true);
-        // Fallback redirect to home page
         window.location.href = "/";
       });
   }, [API_BASE_URL]);
+
+  // FIXED LOGOUT: Uses Axios instead of window.location.href
+  const handleLogout = async () => {
+    try {
+      // 1. Send request to backend to destroy session and clear cookies
+      await axios.get(`${API_BASE_URL}/auth/logout`, { withCredentials: true });
+      
+      // 2. Client-side redirect to the login page
+      window.location.href = "/"; 
+    } catch (err) {
+      console.error("Logout failed during API call", err);
+      // Force redirect to login page even if the backend call fails
+      window.location.href = "/";
+    }
+  };
 
   if (error) return <div style={styles.container}><h1>Redirecting to Login...</h1></div>;
   if (!user) return <div style={styles.container}><h1>Loading Priyanka's Dashboard...</h1></div>;
@@ -41,8 +53,8 @@ export default function Dashboard() {
         <div style={styles.infoRow}><strong>Google ID:</strong> {user.googleId}</div>
         
         <button 
-          // 3. Updated Logout Link
-          onClick={() => window.location.href = `${API_BASE_URL}/auth/logout`}
+          // 3. TRIGGER: Call the new async logout function
+          onClick={handleLogout}
           style={styles.logoutBtn}
         >
           Logout
@@ -51,6 +63,8 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
 
 
 const styles = {
