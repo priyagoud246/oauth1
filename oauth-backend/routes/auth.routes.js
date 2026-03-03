@@ -5,12 +5,11 @@ import { isAuthenticated } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-const CLIENT_URL = process.env.NODE_ENV === "production" 
-    ? "https://oauth-fullstack.netlify.app" 
-    : "http://localhost:5173";
+// Fallback to Netlify URL if process.env.CLIENT_URL is missing
+const CLIENT_URL = process.env.CLIENT_URL || "https://oauth-fullstack.netlify.app";
 
 router.get("/google", (req, res, next) => {
-    console.log(" Incoming request to /auth/google...");
+    console.log("Incoming request to /auth/google...");
     next();
 }, passport.authenticate("google", { 
     scope: ["profile", "email"],
@@ -18,7 +17,7 @@ router.get("/google", (req, res, next) => {
 }));
 
 router.get("/google/callback", (req, res, next) => {
-    console.log("Google redirected back to callback...");
+    console.log("🔄 Google redirected back to callback...");
     next();
 },
   passport.authenticate("google", { 
@@ -26,8 +25,14 @@ router.get("/google/callback", (req, res, next) => {
     session: true 
   }),
   (req, res) => {
-    console.log(" Auth Successful! Sending user to Dashboard.");
-    res.redirect(`${CLIENT_URL}/dashboard`);
+    try {
+        console.log(" Auth Successful! Sending user to Dashboard.");
+        // Ensure there are no spaces in the URL
+        res.redirect(`${CLIENT_URL}/dashboard`);
+    } catch (error) {
+        console.error(" Redirect Error:", error);
+        res.status(500).send("Internal Server Error during redirect");
+    }
   }
 );
 
