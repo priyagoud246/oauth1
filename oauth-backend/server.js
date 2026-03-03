@@ -16,7 +16,7 @@ const app = express();
 // Use a cleaner CORS setup for production
 const allowedOrigins = [
   "http://localhost:5173", 
-  "https://oauth-fullstack.netlify.app" 
+   "https://oauth1-zrka.onrender.com"
 ];
 
 app.use(cors({ 
