@@ -15,13 +15,13 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-       
+        console.log("Profile received from Google:", profile.id);
+
         let user = await User.findOne({ 
           $or: [{ googleId: profile.id }, { email: profile.emails?.[0]?.value }] 
         });
 
         if (user) {
-          
           if (!user.googleId) {
             user.googleId = profile.id;
             await user.save();
@@ -29,35 +29,34 @@ passport.use(
           return done(null, user);
         }
 
+        // IMPORTANT: Ensure your User.js model has 'name' or 'displayName'
+        // If your model uses 'displayName', change 'name:' to 'displayName:' below
         user = await User.create({
           googleId: profile.id,
-          name: profile.displayName, 
+          name: profile.displayName || profile.name?.givenName || "Google User", 
           email: profile.emails?.[0]?.value
-          
         });
         
+        console.log("New User Created successfully");
         return done(null, user);
       } catch (err) {
-        console.error("Passport Strategy Error:", err);
+        console.error("❌ Passport Strategy Error:", err);
         return done(err, null);
       }
     }
   )
 );
 
-// Session logic
 passport.serializeUser((user, done) => {
-  
   done(null, user._id); 
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
-    
     const user = await User.findById(id);
     done(null, user);
   } catch (err) {
-    console.error(" Deserialization Error:", err);
+    console.error("❌ Deserialization Error:", err);
     done(err, null);
   }
 });
