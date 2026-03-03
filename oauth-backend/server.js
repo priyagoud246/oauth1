@@ -13,15 +13,17 @@ import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
-// Ensure there are NO trailing slashes in these URLs
+// Use a cleaner CORS setup for production
 const allowedOrigins = [
   "http://localhost:5173", 
   "https://oauth-fullstack.netlify.app" 
 ];
 
 app.use(cors({ 
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -33,10 +35,12 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// Essential for Render/Heroku/Vercel proxies
 app.set("trust proxy", 1); 
 
+// Fixed Session Logic
 app.use(session({
-  // Ensure SESSION_SECRET is set in Render Environment
   secret: process.env.SESSION_SECRET || "priyanka_secure_67",
   resave: false,
   saveUninitialized: false, 
@@ -44,12 +48,13 @@ app.use(session({
   store: MongoStore.create({ 
     mongoUrl: process.env.MONGO_URI,
     collectionName: 'sessions',
+    stringify: false, // Ensures session data is stored as a clean object
     ttl: 14 * 24 * 60 * 60 
   }),
   cookie: {
-    secure: true, 
+    secure: true, // Must be true for HTTPS on Render
     httpOnly: true,
-    sameSite: "none", 
+    sameSite: "none", // Critical for Cross-Site (Netlify to Render)
     maxAge: 24 * 60 * 60 * 1000 
   }
 }));
@@ -63,9 +68,10 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRoutes);
 
+// Database Connection
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected to MongoDB Atlas (oauth_db)"))
-  .catch(err => console.error(" DB Error:", err));
+  .then(() => console.log("✅ Connected to MongoDB Atlas (oauth_db)"))
+  .catch(err => console.error("❌ DB Error:", err));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
